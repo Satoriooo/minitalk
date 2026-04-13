@@ -15,18 +15,17 @@ int main(void)
 	sa.sa_handler = my_handler;
 	sigemptyset(&sa.sa_mask);
 
-	sa.sa_flags = SA_RESTART;
-
-	if (sigaction(SIGINT, &sa, NULL) == -1)
-	{
-		perror("sigaction");
-		return 1;
-	}
+	sa.sa_handler = signal_handler;
+	sa.sa_flags = 0;
 	printf("PID: %d\n", getpid());
-	signal(SIGUSR1, my_handler);
+
+	if (sigaction(SIGUSR1, &sa, NULL) == -1)
+		exit(1);
+	else if (sigaction(SIGUSR2, &sa, NULL) == -1)
+		exit(1);
+
 	while (1)
 	{
-		sleep(1);
 	}
 	return (0);
 }

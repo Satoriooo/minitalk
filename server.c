@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:20 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/13 19:45:50 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/13 20:14:28 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,21 +64,20 @@ void my_handler(int signum)
 
 int main(int ac, char **av)
 {
-	int	pid;
+	struct sigaction sa;
 
-	if (ac != 1)
-	{
-		print_error("No parameters acceptable.");
-		return (1);
-	}
+	sa.sa_handler = my_handler;
+	sigemptyset(&sa.sa_mask);
+
 	ft_putstr_fd("PID: ", 1);
 	ft_putnbr_fd(getpid(), 1);
 	ft_putstr_fd("\n", 1);
-	signal(SIGUSR1, my_handler);
-	signal(SIGUSR2, my_handler);
+	if (sigaction(SIGUSR1, &sa, NULL) == -1)
+		exit (1);
+	else if (sigaction(SIGUSR2, &sa, NULL) == -1)
+		exit (1);
 	while (1)
 	{
-		pause();
 	}
 	return (0);
 }
