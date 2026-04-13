@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:16 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/13 17:33:38 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/13 17:56:55 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ int	main(int ac, char **av)
 	pid = ft_atoi(av[1]);
 
 	i = 0;
-	while (av[2][++i])
-		send_char(av[2][i], pid);
+	while (av[2][i])
+		send_char(av[2][i++], pid);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:20 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/13 17:30:45 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/13 19:45:50 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void my_handler(int signum)
 {
 	static int	idx = 0;
 	char		c;
-	
+
 	if (signum == SIGUSR1)
 		signum = 0;
 	else
@@ -74,10 +74,10 @@ int main(int ac, char **av)
 	ft_putstr_fd("PID: ", 1);
 	ft_putnbr_fd(getpid(), 1);
 	ft_putstr_fd("\n", 1);
-	while (ac == 1)
+	signal(SIGUSR1, my_handler);
+	signal(SIGUSR2, my_handler);
+	while (1)
 	{
-		signal(SIGUSR1, my_handler);
-		signal(SIGUSR2, my_handler);
 		pause();
 	}
 	return (0);
