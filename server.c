@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:20 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/13 19:45:50 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/14 20:24:46 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,15 +44,22 @@ char bits_to_char(int signum, int n)
 	return (c);
 }
 
-void my_handler(int signum)
+void my_handler(int signum, siginfo_t *info, void *context)
 {
 	static int	idx = 0;
 	char		c;
 
+	(void) context;
 	if (signum == SIGUSR1)
+	{
 		signum = 0;
+		kill(info->si_pid, SIGUSR1);
+	}
 	else
+	{
 		signum = 1;
+		kill(info->si_pid, SIGUSR2);
+	}
 	c = bits_to_char(signum, 7 - idx);
 	idx++;
 	if (idx == 8)
@@ -62,23 +69,20 @@ void my_handler(int signum)
 	}
 }
 
-int main(int ac, char **av)
+int main()
 {
+	struct sigaction sa;
 	int	pid;
 
-	if (ac != 1)
-	{
-		print_error("No parameters acceptable.");
-		return (1);
-	}
 	ft_putstr_fd("PID: ", 1);
 	ft_putnbr_fd(getpid(), 1);
 	ft_putstr_fd("\n", 1);
-	signal(SIGUSR1, my_handler);
-	signal(SIGUSR2, my_handler);
+	sa.sa_sigaction = &my_handler;
+	sa.sa_flags = SA_SIGINFO;
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
-	{
 		pause();
-	}
 	return (0);
 }
