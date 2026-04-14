@@ -1,8 +1,0 @@
-SIDE: CLIENT
-
-- Send PID's strlen
-- Send PID
-
-- Send letter
-- Receive SIGUSR2
-- Send next letter
