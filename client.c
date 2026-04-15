@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:16 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/14 20:31:18 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/15 19:31:26 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,14 @@ static int	is_int(char *s)
 	}
 	return (0);
 }
-void	empty_handler(int sig)
+void	empty_handler(int i, siginfo_t *si, void *v)
 {
-	(void)sig;
+	(void)i;
+	(void)si;
+	(void)v;
 }
 
-void send_char(char c, int pid)
+void send_char(unsigned char c, int pid)
 {
 	int i;
 
@@ -47,8 +49,9 @@ void send_char(char c, int pid)
 
 int	main(int ac, char **av)
 {
-	int	i;
-	int	pid;
+	struct sigaction	sa;
+	int					i;
+	int					pid;
 
 	if (ac != 3)
 	{
@@ -61,10 +64,13 @@ int	main(int ac, char **av)
 		return (1);
 	}
 	pid = ft_atoi(av[1]);
-	signal(SIGUSR1, empty_handler);
-	signal(SIGUSR2, empty_handler);
+	sa.sa_sigaction = &empty_handler;
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
 	i = 0;
 	while (av[2][i])
-		send_char(av[2][i++], pid);
+		send_char((unsigned char)av[2][i++], pid);
 	return (0);
 }
