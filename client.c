@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:16 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/18 00:22:43 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/18 01:06:27 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,14 @@ void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
 	(void)si;
 	(void)context;
-	static int n = 0;
-	printf("Call: n = %d\n", n++);
-	if (signum == SIGUSR1)
-		ft_putstr_fd("Confirm: Received SIGUSR1.\n", 1);
-	else if (signum == SIGUSR2)
-		ft_putstr_fd("Confirm: Received SIGUSR2.\n", 1);
-	else
-		ft_putstr_fd("Unknown signal received.\n", 1);
+	// static int n = 0;
+	// printf("Call: n = %d\n", n++);
+	// if (signum == SIGUSR1)
+	// 	ft_putstr_fd("Confirm: Received SIGUSR1.\n", 1);
+	// else if (signum == SIGUSR2)
+	// 	ft_putstr_fd("Confirm: Received SIGUSR2.\n", 1);
+	// else
+	// 	ft_putstr_fd("Unknown signal received.\n", 1);
 	g_state = 0;
 }
 
@@ -46,16 +46,14 @@ int error_handler(char *msg)
 	exit (1);
 }
 
+void kill_handler(int pid, int sig)
+{
+	if (kill(pid, sig) == -1)
+		error_handler("kill function failed.");
+}
+
 void send_char(unsigned char c, int pid)
 {
-
-	// static int n = 0;
-	// char cn = n + '0';
-	// write(1, "Send char call: ", 16);
-	// write(1, &cn, 1);
-	// write(1, "\n", 1);
-	// n++;
-	
 	int	i;
 	int cnt;
 
@@ -63,16 +61,16 @@ void send_char(unsigned char c, int pid)
 	while (--i >= 0)
 	{
 		if ((c >> i & 1) == 0)
-			kill(pid, SIGUSR1);
+			kill_handler(pid, SIGUSR1);
 		else
-			kill(pid, SIGUSR2);
+			kill_handler(pid, SIGUSR2);
 		g_state = 1;
 		cnt = 0;
 		while(g_state == 1)
 		{
 			usleep(10);
 			cnt++;
-			if (cnt == 500)
+			if (cnt == 50)
 				error_handler("Time out: Can't receive confirmation.");
 		}
 	}

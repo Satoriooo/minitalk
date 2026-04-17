@@ -6,7 +6,7 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:20 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/18 00:02:38 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/18 00:57:16 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,10 @@ int main()
 	ft_putstr_fd("\n", 1);
 	sa.sa_sigaction = &my_handler;
 	sa.sa_flags = SA_SIGINFO;
-	sigemptyset(&sa.sa_mask);
+
+	sigaddset(&sa.sa_mask, SIGUSR1); //
+	sigaddset(&sa.sa_mask, SIGUSR2); //
+	// sigemptyset(&sa.sa_mask);
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
