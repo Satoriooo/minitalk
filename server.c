@@ -6,11 +6,11 @@
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/09 18:11:20 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/14 20:24:46 by shirose          ###   ########.fr       */
+/*   Updated: 2026/04/18 00:02:38 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minitalk.h"
+#include "server.h"
 
 static void	ft_putchar(char c, int fd)
 {
@@ -46,19 +46,23 @@ char bits_to_char(int signum, int n)
 
 void my_handler(int signum, siginfo_t *info, void *context)
 {
+	static int debug_n = 0; // DELETE ME
 	static int	idx = 0;
 	char		c;
 
+//	printf("my_handler Call: %d\n", debug_n++);
 	(void) context;
 	if (signum == SIGUSR1)
 	{
 		signum = 0;
 		kill(info->si_pid, SIGUSR1);
+//		printf("SIGUSR1 is sent\n");
 	}
 	else
 	{
 		signum = 1;
 		kill(info->si_pid, SIGUSR2);
+//		printf("SIGUSR2 is sent\n");
 	}
 	c = bits_to_char(signum, 7 - idx);
 	idx++;
