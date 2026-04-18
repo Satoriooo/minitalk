@@ -25,20 +25,26 @@ static int	is_int(char *s)
 	}
 	return (0);
 }
-void	signal_confirmation(int signum, siginfo_t *si, void *context)
+static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
 	(void)si;
 	(void)context;
 	g_state = 0;
 }
 
-int error_handler(char *msg)
+static int error_handler(char *msg)
 {
 	ft_putstr_fd(msg, 1);
 	exit (1);
 }
 
-void send_char(unsigned char c, int pid)
+void safe_kill(int pid, int signum)
+{
+    if (kill(pid, signum) == -1)
+        error_handler("Failed kill function.");
+}
+
+static void send_char(unsigned char c, int pid)
 {
 	int	i;
 	int cnt;
@@ -48,9 +54,9 @@ void send_char(unsigned char c, int pid)
 	{
 		g_state = 1;
 		if ((c >> i & 1) == 0)
-			kill(pid, SIGUSR1);
+			safe_kill(pid, SIGUSR1);
 		else
-			kill(pid, SIGUSR2);
+			safe_kill(pid, SIGUSR2);
 		cnt = 0;
 		while(g_state == 1)
 		{
@@ -69,22 +75,16 @@ int	main(int ac, char **av)
 	int					pid;
 
 	if (ac != 3)
-	{
 		error_handler("Invalid number of parameters.");
-		return (1);
-	}
 	if (ft_strlen(av[1]) > 12 || is_int(av[1]) == -1 || ft_atoi(av[1]) < 0)
-	{
-		print_error("Invalid PID.");
-		return (1);
-	}
+		error_handler("Invalid PID.");
 	pid = ft_atoi(av[1]);
 	sa.sa_sigaction = &signal_confirmation;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	if (sigaction(SIGUSR1, &sa, NULL) == -1
 	|| sigaction(SIGUSR2, &sa, NULL) == -1)
-		error_handler("Client failed to send signal.");
+		error_handler("Failed to initialize sigaction.");
 	i = 0;
 	while (av[2][i])
 		send_char((unsigned char)av[2][i++], pid);

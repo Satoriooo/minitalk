@@ -48,6 +48,13 @@ char bits_to_char(int signum, int n)
 	return (c);
 }
 
+static void	set_state(pid_t *current_pid, int *idx, char *c, pid_t new_pid)
+{
+	*current_pid = new_pid;
+	*idx = 0;
+	*c = 0;
+}
+
 void my_handler(int signum, siginfo_t *info, void *context)
 {
 	static pid_t current_pid = 0;
@@ -56,11 +63,7 @@ void my_handler(int signum, siginfo_t *info, void *context)
 
 	(void) context;
 	if (current_pid != 0 && current_pid != info->si_pid)
-	{
-		current_pid = info->si_pid;
-		idx = 0;
-		c = 0;
-	}
+		set_state(&current_pid, &idx, &c, info->si_pid);
 	if (current_pid == 0)
     	current_pid = info->si_pid;
 	if (current_pid != info->si_pid)
@@ -73,7 +76,8 @@ void my_handler(int signum, siginfo_t *info, void *context)
 			current_pid = 0;
 		idx = 0;
 	}
-		kill(info->si_pid, SIGUSR1);
+	if (kill(info->si_pid, SIGUSR1) == -1)
+		set_state(&current_pid, &idx, &c, 0);
 }
 
 int main()
@@ -86,8 +90,9 @@ int main()
 	sa.sa_sigaction = &my_handler;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
-	sigaction(SIGUSR1, &sa, NULL);
-	sigaction(SIGUSR2, &sa, NULL);
+	if (sigaction(SIGUSR1, &sa, NULL) == -1
+	|| sigaction(SIGUSR2, &sa, NULL) == -1)
+		error_handler("Failed to initialize sigaction.");
 	while (1)
 		pause();
 	return (0);
