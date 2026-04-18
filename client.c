@@ -5,14 +5,14 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/09 18:11:16 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/18 00:22:43 by shirose          ###   ########.fr       */
+/*   Created: 2026/04/18 19:15:52 by shirose           #+#    #+#             */
+/*   Updated: 2026/04/18 19:15:52 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "client.h"
 
-static volatile sig_atomic_t g_state = 0;
+static volatile sig_atomic_t	g_state = 0;
 
 static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
@@ -25,13 +25,13 @@ static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 static int	error_handler(char *msg)
 {
 	print_error(msg);
-	exit (1);
+	exit(1);
 }
 
 static void	safe_kill(int pid, int signum)
 {
-    if (kill(pid, signum) == -1)
-        error_handler("Kill function failed. Check server issue, invalid PID.");
+	if (kill(pid, signum) == -1)
+		error_handler("Kill function failed. Check server issue, invalid PID.");
 }
 
 static void	send_char(unsigned char c, int pid)
@@ -48,7 +48,7 @@ static void	send_char(unsigned char c, int pid)
 		else
 			safe_kill(pid, SIGUSR2);
 		cnt = 0;
-		while(g_state == 1)
+		while (g_state == 1)
 		{
 			usleep(100);
 			cnt++;
@@ -73,7 +73,7 @@ int	main(int ac, char **av)
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	if (sigaction(SIGUSR1, &sa, NULL) == -1
-	|| sigaction(SIGUSR2, &sa, NULL) == -1)
+		|| sigaction(SIGUSR2, &sa, NULL) == -1)
 		error_handler("Failed to initialize sigaction.");
 	i = 0;
 	while (av[2][i])
@@ -84,10 +84,22 @@ int	main(int ac, char **av)
 
 /*
 100 letters:
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000
 
 300 emojis:
-🥶😏🤢🤕💩😲😛🥵🦷🤢👣👎🤞😚🤑😵😥🤌🤙💀👆🙄😳🦵🙌🤌🙏 😞👣🤞🦿😍😱😧🧠😜😦😝😼🤫😏🤫🥳🤝🦶🤨👻🥳😈✊👅👌😗🤌🤝😧😧😡🤕🤯😈👹🤙😲🎃👅🩸💋👉😥💋🤔😼🤯😾🤗😖😳🤒😺🤝😏😍✊🙂💀🤘🙌😿🤠👄💅😾🦾👌😼👀👺👀😢😇🤮😴😘🤔🤫👽🤥✊🫀🤠🤕🤮😃😴🤬🤙👐😫🤘🙂🙀👻👂😖🤖😶😍🤚😛😇🦴💩😡🤧🤗👌😆😧💪🦵🤓😄😕😵😤😊😇😒🤓🫁🫀😀🤬🩸😺😺🙁😿👆😵🖕👻😵🤨🤨😍🫀👏💀👿😘😄🥺😦😓😰👌🫁😯😚😖🤳🥺👎👽🥶👃🧐🥱👿🧐👹🤨😬🤓🤢🤳🦿😓😹😌👇😜🤐👀😶🦶😜✋🤥👏🤞👆👽👉🤓🙁😄👂🦶😮😊😩🤒👆😯✋🤭🤐😝👿👋🤖💀😕🧠🤫😸🤏👻✋😥👻😯🙄🤟🥺🤭🤬😫🫀😬😲😠🙌😚🤮😋😤😡🤬👹🦵😴👇🤌🤟💩🤓🤌😇👀🤛🥳👣😴🤠😝🖖✊😡🙌😱👿😥😍😡🙌😱👿😥😍😡🙌😱👿😥
-
+🥶😏🤢🤕💩😲😛🥵🦷🤢👣👎🤞😚🤑😵😥🤌🤙💀👆🙄😳🦵
+😞👣🤞🦿😍😱😧🧠😜😦😝😼🤫😏🤫🥳🤝🦶🤨👻🥳😈✊👅
+👌😗🤌🤝😧😧😡🤕🤯😈👹🤙😲🎃👅🩸💋👉😥💋🤔😼🤯😾
+🤗😖😳🤒😺🤝😏😍✊🙂💀🤘🙌😿🤠👄💅😾🦾👌😼👀👺👀
+😢😇🤮😴😘🤔🤫👽🤥✊🫀🤠🤕🤮😃😴🤬🤙👐😫🤘🙂🙀👻
+👂😖🤖😶😍🤚😛😇🦴💩😡🤧🤗👌😆😧💪🦵🤓😄😕😵😤😊
+😇😒🤓🫁🫀😀🤬🩸😺😺🙁😿👆😵🖕👻😵🤨🤨😍🫀👏💀👿
+😘😄🥺😦😓😰👌🫁😯😚😖🤳🥺👎👽🥶👃🧐🥱👿🧐👹🤨😬
+🤓🤢🤳🦿😓😹😌👇😜🤐👀😶🦶😜✋🤥👏🤞👆👽👉🤓🙁😄
+👂🦶😮😊😩🤒👆😯✋🤭🤐😝👿👋🤖💀😕🧠🤫😸🤏👻✋😥
+👻😯🙄🤟🥺🤭🤬😫🫀😬😲😠🙌😚🤮😋😤😡🤬👹🦵😴👇🤌
+🤟💩🤓🤌😇👀🤛🥳👣😴🤠😝🖖✊😡🙌😱👿😥😍😡🙌😱👿
+😥😍😡🙌😱👿😥🙌🤌🙏
 
 */

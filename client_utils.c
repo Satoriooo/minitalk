@@ -5,20 +5,19 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/17 23:26:11 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/17 23:28:22 by shirose          ###   ########.fr       */
+/*   Created: 2026/04/18 19:21:22 by shirose           #+#    #+#             */
+/*   Updated: 2026/04/18 19:21:22 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "client.h"
 
-
 int	ft_strlen(char *s)
 {
 	int	n;
-	
+
 	n = 0;
-	while(s[n])
+	while (s[n])
 		n++;
 	return (n);
 }

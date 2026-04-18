@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: shirose <shirose@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/17 23:28:49 by shirose           #+#    #+#             */
-/*   Updated: 2026/04/17 23:30:08 by shirose          ###   ########.fr       */
+/*   Created: 2026/04/18 19:16:22 by shirose           #+#    #+#             */
+/*   Updated: 2026/04/18 19:16:22 by shirose          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,9 @@
 int	ft_strlen(char *s)
 {
 	int	n;
-	
+
 	n = 0;
-	while(s[n])
+	while (s[n])
 		n++;
 	return (n);
 }
