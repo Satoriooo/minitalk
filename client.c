@@ -12,6 +12,8 @@
 
 #include "client.h"
 
+static volatile sig_atomic_t g_state = 0;
+
 static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
 	(void)signum;
