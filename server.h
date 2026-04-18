@@ -13,7 +13,7 @@
 #ifndef SERVER_H
 # define SERVER_H
 
-#define _POSIX_C_SOURCE 200809L // DELETE ME!
+#define _POSIX_C_SOURCE 200809L
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>

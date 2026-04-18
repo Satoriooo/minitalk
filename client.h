@@ -14,12 +14,10 @@
 # define CLIENT_H
 
 #define _DEFAULT_SOURCE
-#define _POSIX_C_SOURCE 200809L // DELETE ME!
+#define _POSIX_C_SOURCE 200809L
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-static volatile sig_atomic_t g_state = 0;
 
 int		ft_strlen(char *s);
 int		ft_atoi(const char *nptr);

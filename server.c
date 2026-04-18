@@ -12,6 +12,8 @@
 
 #include "server.h"
 
+static volatile sig_atomic_t g_state = 0;
+
 static int	error_handler(char *msg)
 {
 	print_error(msg);

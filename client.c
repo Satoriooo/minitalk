@@ -14,6 +14,7 @@
 
 static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
+	(void)signum;
 	(void)si;
 	(void)context;
 	g_state = 0;
