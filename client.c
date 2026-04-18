@@ -12,19 +12,6 @@
 
 #include "client.h"
 
-static int	is_int(char *s)
-{
-	int	i;
-
-	i = 0;
-	while (s[i])
-	{
-		if (!(s[i] >= '0' && s[i] <= '9'))
-			return (-1);
-		i++;
-	}
-	return (0);
-}
 static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
 	(void)si;
@@ -32,22 +19,22 @@ static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 	g_state = 0;
 }
 
-static int error_handler(char *msg)
+static int	error_handler(char *msg)
 {
-	ft_putstr_fd(msg, 1);
+	print_error(msg);
 	exit (1);
 }
 
-void safe_kill(int pid, int signum)
+static void	safe_kill(int pid, int signum)
 {
     if (kill(pid, signum) == -1)
-        error_handler("Failed kill function.");
+        error_handler("Kill function failed. Check server issue, invalid PID.");
 }
 
-static void send_char(unsigned char c, int pid)
+static void	send_char(unsigned char c, int pid)
 {
 	int	i;
-	int cnt;
+	int	cnt;
 
 	i = 8;
 	while (--i >= 0)
@@ -76,7 +63,7 @@ int	main(int ac, char **av)
 
 	if (ac != 3)
 		error_handler("Invalid number of parameters.");
-	if (ft_strlen(av[1]) > 12 || is_int(av[1]) == -1 || ft_atoi(av[1]) < 0)
+	if (ft_strlen(av[1]) > 12 || is_int(av[1]) == -1 || ft_atoi(av[1]) <= 0)
 		error_handler("Invalid PID.");
 	pid = ft_atoi(av[1]);
 	sa.sa_sigaction = &signal_confirmation;
@@ -91,3 +78,13 @@ int	main(int ac, char **av)
 	send_char('\0', pid);
 	return (0);
 }
+
+/*
+100 letters:
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+300 emojis:
+🥶😏🤢🤕💩😲😛🥵🦷🤢👣👎🤞😚🤑😵😥🤌🤙💀👆🙄😳🦵🙌🤌🙏 😞👣🤞🦿😍😱😧🧠😜😦😝😼🤫😏🤫🥳🤝🦶🤨👻🥳😈✊👅👌😗🤌🤝😧😧😡🤕🤯😈👹🤙😲🎃👅🩸💋👉😥💋🤔😼🤯😾🤗😖😳🤒😺🤝😏😍✊🙂💀🤘🙌😿🤠👄💅😾🦾👌😼👀👺👀😢😇🤮😴😘🤔🤫👽🤥✊🫀🤠🤕🤮😃😴🤬🤙👐😫🤘🙂🙀👻👂😖🤖😶😍🤚😛😇🦴💩😡🤧🤗👌😆😧💪🦵🤓😄😕😵😤😊😇😒🤓🫁🫀😀🤬🩸😺😺🙁😿👆😵🖕👻😵🤨🤨😍🫀👏💀👿😘😄🥺😦😓😰👌🫁😯😚😖🤳🥺👎👽🥶👃🧐🥱👿🧐👹🤨😬🤓🤢🤳🦿😓😹😌👇😜🤐👀😶🦶😜✋🤥👏🤞👆👽👉🤓🙁😄👂🦶😮😊😩🤒👆😯✋🤭🤐😝👿👋🤖💀😕🧠🤫😸🤏👻✋😥👻😯🙄🤟🥺🤭🤬😫🫀😬😲😠🙌😚🤮😋😤😡🤬👹🦵😴👇🤌🤟💩🤓🤌😇👀🤛🥳👣😴🤠😝🖖✊😡🙌😱👿😥😍😡🙌😱👿😥😍😡🙌😱👿😥
+
+
+*/

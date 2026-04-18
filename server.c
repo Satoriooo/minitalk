@@ -12,31 +12,15 @@
 
 #include "server.h"
 
-static void	ft_putchar(char c, int fd)
+static int	error_handler(char *msg)
 {
-	write(fd, &c, 1);
+	print_error(msg);
+	exit (1);
 }
 
-static void	ft_putnbr_fd(int nb, int fd)
+static char bits_to_char(int signum, int n)
 {
-	if (nb == -2147483648)
-	{
-		write(fd, "-2147483648", 11);
-		return ;
-	}
-	else if (nb < 0)
-	{
-		nb *= -1;
-		ft_putchar('-', fd);
-	}
-	if (nb >= 10)
-		ft_putnbr_fd(nb / 10, fd);
-	ft_putchar((nb % 10) + '0', fd);
-}
-
-char bits_to_char(int signum, int n)
-{
-	static char c = 0;
+	static char	c = 0;
 
 	if (signum == SIGUSR1)
 		signum = 0;
@@ -55,13 +39,15 @@ static void	set_state(pid_t *current_pid, int *idx, char *c, pid_t new_pid)
 	*c = 0;
 }
 
-void my_handler(int signum, siginfo_t *info, void *context)
+static void my_handler(int signum, siginfo_t *info, void *context)
 {
-	static pid_t current_pid = 0;
-	static int	idx = 0;
-	char		c;
+	static pid_t	current_pid = 0;
+	static int		idx = 0;
+	char			c;
 
 	(void) context;
+	if (info->si_pid <= 0)
+		error_handler("Invalid PID.");
 	if (current_pid != 0 && current_pid != info->si_pid)
 		set_state(&current_pid, &idx, &c, info->si_pid);
 	if (current_pid == 0)
@@ -82,7 +68,7 @@ void my_handler(int signum, siginfo_t *info, void *context)
 
 int main()
 {
-	struct sigaction sa;
+	struct sigaction	sa;
 	
 	ft_putstr_fd("PID: ", 1);
 	ft_putnbr_fd(getpid(), 1);

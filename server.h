@@ -14,7 +14,6 @@
 # define SERVER_H
 
 #define _POSIX_C_SOURCE 200809L // DELETE ME!
-#include <stdio.h> // DELETE ME!
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,8 +21,6 @@
 int 	ft_strlen(char *s);
 void	print_error(char *s);
 void	ft_putstr_fd(char *s, int fd);
-int		ft_atoi(const char *nptr);
-
-# define SLEEP_TIME 100
+void	ft_putnbr_fd(int nb, int fd);
 
 #endif

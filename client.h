@@ -15,18 +15,15 @@
 
 #define _DEFAULT_SOURCE
 #define _POSIX_C_SOURCE 200809L // DELETE ME!
-#include <stdio.h> // DELETE ME!
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 static volatile sig_atomic_t g_state = 0;
 
-int 	ft_strlen(char *s);
-void	print_error(char *s);
-void	ft_putstr_fd(char *s, int fd);
+int		ft_strlen(char *s);
 int		ft_atoi(const char *nptr);
-
-# define SLEEP_TIME 100
+int		is_int(char *s);
+void	print_error(char *s);
 
 #endif
