@@ -38,6 +38,10 @@ char bits_to_char(int signum, int n)
 {
 	static char c = 0;
 
+	if (signum == SIGUSR1)
+		signum = 0;
+	else
+		signum = 1;
 	if (n == 7)
 		c = 0;
 	c = c | signum << n;
@@ -46,38 +50,36 @@ char bits_to_char(int signum, int n)
 
 void my_handler(int signum, siginfo_t *info, void *context)
 {
-	static int debug_n = 0; // DELETE ME
+	static pid_t current_pid = 0;
 	static int	idx = 0;
 	char		c;
 
-//	printf("my_handler Call: %d\n", debug_n++);
 	(void) context;
-	if (signum == SIGUSR1)
+	if (current_pid != 0 && current_pid != info->si_pid)
 	{
-		signum = 0;
-		kill(info->si_pid, SIGUSR1);
-//		printf("SIGUSR1 is sent\n");
+		current_pid = info->si_pid;
+		idx = 0;
+		c = 0;
 	}
-	else
-	{
-		signum = 1;
-		kill(info->si_pid, SIGUSR2);
-//		printf("SIGUSR2 is sent\n");
-	}
-	c = bits_to_char(signum, 7 - idx);
-	idx++;
+	if (current_pid == 0)
+    	current_pid = info->si_pid;
+	if (current_pid != info->si_pid)
+    	return ;
+	c = bits_to_char(signum, 7 - idx++);
 	if (idx == 8)
 	{
 		write(1, &c, 1);
+		if (c == '\0')
+			current_pid = 0;
 		idx = 0;
 	}
+		kill(info->si_pid, SIGUSR1);
 }
 
 int main()
 {
 	struct sigaction sa;
-	int	pid;
-
+	
 	ft_putstr_fd("PID: ", 1);
 	ft_putnbr_fd(getpid(), 1);
 	ft_putstr_fd("\n", 1);
