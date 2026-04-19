@@ -12,9 +12,9 @@
 
 #include "client.h"
 
-int	ft_strlen(char *s)
+size_t	ft_strlen(char *s)
 {
-	int	n;
+	size_t	n;
 
 	n = 0;
 	while (s[n])

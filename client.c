@@ -31,7 +31,7 @@ static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 	g_state = 0;
 }
 
-static int	error_handler(char *msg)
+static void	error_handler(char *msg)
 {
 	print_error(msg);
 	exit(1);
@@ -40,8 +40,7 @@ static int	error_handler(char *msg)
 static void	safe_kill(int pid, int signum)
 {
 	if (kill(pid, signum) == -1)
-		error_handler
-			("Kill function failed. Check PID.");
+		error_handler("Kill function failed. Check PID.");
 }
 
 static void	send_char(unsigned char c, int pid)
@@ -68,9 +67,45 @@ static void	send_char(unsigned char c, int pid)
 	}
 }
 
+void	send_length(char *s, size_t len, int pid)
+{
+	static size_t	i = 0;
+	size_t	cnt;
+
+	printf("--CLIENT: send length ... Call: %zu--\n", i);
+
+	len = ft_strlen(s);
+
+	printf("len: %zu\n", len);
+	printf("len >> i & 1: %zu\n", (len >> i));
+	printf("len >> (i + 1) & 1: %zu\n", (len >> (i + 1)));
+	
+
+	while (i < 64)
+	{
+		g_state = 1;
+		if ((len >> (63 - i++) & 1) == 0)
+			safe_kill(pid, SIGUSR1);
+		else
+			safe_kill(pid, SIGUSR2);
+		printf("%zu", (len >> i & 1));
+		printf("i: %zu\n", i);
+		cnt = 0;
+		while (g_state == 1)
+		{
+			usleep(100);
+			cnt++;
+			if (cnt == 5000)
+				error_handler("Time out: Can't receive confirmation.");
+		}
+	}
+	printf("\n--END OF SEND LENGTH--\n\n");
+}
+
 int	main(int ac, char **av)
 {
 	struct sigaction	sa;
+	size_t				len;
 	int					i;
 	int					pid;
 
@@ -89,6 +124,10 @@ int	main(int ac, char **av)
 	i = 0;
 	if (av[2][0] == '\0')
 		error_handler("String cannot be empty.");
+	printf("--- Main calling send_lenght ---\n");
+	len = ft_strlen(av[2]);
+	send_length(av[2], len, pid);
+
 	while (av[2][i])
 		send_char((unsigned char)av[2][i++], pid);
 	send_char('\0', pid);

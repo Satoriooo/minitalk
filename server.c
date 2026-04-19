@@ -15,7 +15,7 @@
 
 static volatile sig_atomic_t	g_error_state = 0;
 
-static int	error_handler(char *msg)
+static void	error_handler(char *msg)
 {
 	print_error(msg);
 	g_error_state = 1;
@@ -24,14 +24,13 @@ static int	error_handler(char *msg)
 
 static char	bits_to_char(int signum, int n)
 {
+	static int x = 0;
+	printf("--bits_to_char-- Call: %d\n", x++);
+	
 	static char	c = 0;
-
-	if (signum == SIGUSR1)
-		signum = 0;
-	else
-		signum = 1;
 	if (n == 7)
 		c = 0;
+	printf("bit: %d\n", signum);
 	c = c | signum << n;
 	return (c);
 }
@@ -45,45 +44,72 @@ static void	set_state(pid_t *current_pid, int *idx, char *c, pid_t new_pid)
 #include <stdio.h>
 static void	my_handler(int signum, siginfo_t *info, void *context)
 {
-	static char buffer[BUFFER_SIZE];
 	static pid_t	current_pid = 0;
 	static int		idx = 0;
 	char			c = 0;
-	static int		i = -1;
+	static size_t	i = 0;
 
 	(void)context;
 	if (info->si_pid <= 0)
 		error_handler("Invalid PID.");
-	// if (current_pid != 0 && current_pid != info->si_pid)
-	// 	set_state(&current_pid, &idx, &c, info->si_pid);
 	if (current_pid == 0)
 		current_pid = info->si_pid;
-	if (current_pid != info->si_pid) //TODO doesnt work line 54 resets
+	if (current_pid != info->si_pid)
 		return ;
-	c = bits_to_char(signum, 7 - idx++);
-	if (idx == 8)
+
+	static size_t	tmp_len = 0;
+	static size_t	len = 0;
+	static size_t	digit = 0;
+	static char 	*str = NULL;
+
+	if (signum == SIGUSR1)
+		signum = 0;
+	else
+		signum = 1;
+
+	if (digit < 64)
 	{
-		buffer[++i] = c;
-		//write(2, "1", 1); todo remove
-		if (c != '\0')
+		tmp_len = tmp_len << 1;
+		tmp_len = tmp_len | signum;
+
+		printf("check 00: digit = %zu\n", digit);
+		printf("tmp_len: %zu, signum: %d\n", tmp_len, signum);
+		
+		digit++;
+	}
+	else if (digit == 64 && len == 0)
+	{
+		len = tmp_len;
+		printf("len: %zu\n", len);
+		if (!str)
+			str = malloc(sizeof(char) * len + 1);
+		if (!str)
+			exit(1);
+		printf("malloc successful! size: %zu\n", len);
+	}
+	if (len != 0 && i <= len)
+	{
+		c = bits_to_char(signum, 7 - idx++);
+		if (idx == 8)
 		{
-			if (i == BUFFER_SIZE - 1)
-			{
-				buffer[i + 1] = '\0';
-				ft_putstr_fd(buffer, 1);
-				i = -1;
-			}
+			printf("== char c: %c==\n", c);
+			str[i++] = c;
+			idx = 0;
+			c = 0;
 		}
-		else
-		{
-			ft_putstr_fd(buffer, 1);
-			current_pid = 0;
-			i = -1;
-			// ft_putstr_fd(buffer, 1);
-			// printf("\n --- buffer: %s\n", buffer);
-		}
-		idx = 0;
-		c = 0;
+	}
+	if (len != 0 && i == len + 1)
+	{
+		static int y = 0;
+		printf("-- Y Call : %d--, signum: %d\n", y++, signum);
+		printf("str: %s, str[%zu]: %c\n", str, len, str[len]);
+		ft_putstr_fd(str, 1);
+		free(str);
+		str = NULL;
+		digit = 0;
+		tmp_len = 0;
+		len = 0;
+		i = 0;
 	}
 	if (kill(info->si_pid, SIGUSR1) == -1)
 		set_state(&current_pid, &idx, &c, 0);

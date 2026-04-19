@@ -18,8 +18,9 @@
 # include <signal.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <stdio.h> // delete
 
-int		ft_strlen(char *s);
+size_t	ft_strlen(char *s);
 int		ft_atoi(const char *nptr);
 void	ft_putstr_fd(char *s, int fd);
 int		is_int(char *s);
