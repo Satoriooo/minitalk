@@ -198,7 +198,7 @@ int	main(void)
 			}
 			else
 			{
-				pritnf("--  --\n");
+				printf("-- ft_putstr --\n");
 				ft_putstr_fd(str, 1);
 				free(str);
 				i = -1;
