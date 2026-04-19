@@ -22,7 +22,7 @@ int	ft_strlen(char *s)
 	return (n);
 }
 
-static void	ft_putstr_fd(char *s, int fd)
+void	ft_putstr_fd(char *s, int fd)
 {
 	if (!s)
 		return ;

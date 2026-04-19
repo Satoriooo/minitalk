@@ -17,6 +17,7 @@
 # include <signal.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <stdio.h> /// DELETE
 
 int		ft_strlen(char *s);
 void	print_error(char *s);

@@ -16,9 +16,18 @@ static volatile sig_atomic_t	g_state = 0;
 
 static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
-	(void)signum;
+	static int i = 0;
 	(void)si;
 	(void)context;
+	if (signum == SIGUSR1)
+	{
+		ft_putstr_fd("Received confirmation signal.\n", 1);
+		// if(i % 2 == 0)
+		// 	write(1, "1", 1);
+		// else 
+		// 	write(1, "2", 1);
+		i++;
+	}
 	g_state = 0;
 }
 
@@ -31,7 +40,8 @@ static int	error_handler(char *msg)
 static void	safe_kill(int pid, int signum)
 {
 	if (kill(pid, signum) == -1)
-		error_handler("Kill function failed. Check server issue, invalid PID.");
+		error_handler
+			("Kill function failed. Check PID.");
 }
 
 static void	send_char(unsigned char c, int pid)
@@ -71,11 +81,14 @@ int	main(int ac, char **av)
 	pid = ft_atoi(av[1]);
 	sa.sa_sigaction = &signal_confirmation;
 	sa.sa_flags = SA_SIGINFO;
-	sigemptyset(&sa.sa_mask);
+	if (sigemptyset(&sa.sa_mask) == -1)
+		error_handler("Failed to initialize signal set.");
 	if (sigaction(SIGUSR1, &sa, NULL) == -1
 		|| sigaction(SIGUSR2, &sa, NULL) == -1)
 		error_handler("Failed to initialize sigaction.");
 	i = 0;
+	if (av[2][0] == '\0')
+		error_handler("String cannot be empty.");
 	while (av[2][i])
 		send_char((unsigned char)av[2][i++], pid);
 	send_char('\0', pid);
