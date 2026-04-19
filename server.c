@@ -13,8 +13,7 @@
 #include "server.h"
 #define BUFFER_SIZE 20097152
 
-// t_data g_data;
-	volatile sig_atomic_t	g_bit;
+volatile sig_atomic_t	g_bit;
 
 static void	error_handler(char *msg)
 {
@@ -133,10 +132,13 @@ static void	my_handler(int signum, siginfo_t *info, void *context)
 
 size_t	get_strlen(int i)
 {
-	static size_t n = 0;
+	static int x = 0;
+	printf("get_strlen ... call: %d\n", x++);
 
-	if (i == 64)
+	static size_t n;
+	if (i == 0)
 		n = 0;
+
 	n = n << 1 | g_bit;
 	return (n);
 }
@@ -166,26 +168,40 @@ int	main(void)
 	idx = 0;
 	while (1)
 	{
-		printf("-- Main call : %zu--\n", i);
+		printf("-- While loop call ... i: %zu--\n", i);
 		if (i < 64)
 			len = get_strlen(i);
-		else
+		else if (i <= 64)
 		{
-			str = malloc(len);
-			if (!str)
-				error_handler("Malloc failed.");
-			if (i / 8 < len)
+			if (i == 64)
 			{
+				printf("-- Malloc call --\n");
+				printf("len: %zu\n", len);
+
+				str = malloc(len);
+				if (!str)
+					error_handler("Malloc failed.");
+			}
+			static size_t z = 0;
+			printf("-- before: bits_to_char ... Call: %zu, i: %zu --\n", z++, i);
+			if (idx < len)
+			{
+				printf("-- cp: bits_to_char ... Call: %zu, i: %zu --\n", z++, i);
+
 				c = bits_to_char(g_bit);
 				if (i > 64 && i + 1 % 8 == 0)
+				{
 					str[idx++] = c;
+					printf("c: %c\n", c);
+				}
 				c = 0;
 			}
 			else
 			{
+				pritnf("--  --\n");
 				ft_putstr_fd(str, 1);
 				free(str);
-				i = 0;
+				i = -1;
 			}
 		}
 		i++;
