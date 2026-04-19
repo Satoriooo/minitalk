@@ -12,7 +12,7 @@
 
 #include "server.h"
 
-int	ft_strlen(char *s)
+size_t	ft_strlen(char *s)
 {
 	int	n;
 
