@@ -106,10 +106,11 @@ static void	my_handler(int signum, siginfo_t *info, void *context)
 		ft_putstr_fd(str, 1);
 		free(str);
 		str = NULL;
+		len = 0;
 		digit = 0;
 		tmp_len = 0;
-		len = 0;
 		i = 0;
+		current_pid = 0;
 	}
 	if (kill(info->si_pid, SIGUSR1) == -1)
 		set_state(&current_pid, &idx, &c, 0);
