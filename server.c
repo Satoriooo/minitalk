@@ -184,6 +184,7 @@ int	main(void)
 			}
 			static size_t z = 0;
 			printf("-- before: bits_to_char ... Call: %zu, i: %zu --\n", z++, i);
+			printf("idx: %zu, len: %zu\n", idx, len);
 			if (idx < len)
 			{
 				printf("-- cp: bits_to_char ... Call: %zu, i: %zu --\n", z++, i);
