@@ -22,7 +22,9 @@
 typedef struct s_data
 {
 	volatile sig_atomic_t	error_state;
+	volatile sig_atomic_t	client_pid;
 	volatile sig_atomic_t	bit;
+	volatile sig_atomic_t	state;
 }	t_data;
 
 size_t		ft_strlen(char *s);

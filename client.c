@@ -130,7 +130,6 @@ int	main(int ac, char **av)
 
 	while (av[2][i])
 		send_char((unsigned char)av[2][i++], pid);
-	send_char('\0', pid);
 	return (0);
 }
 
