@@ -18,7 +18,6 @@
 # include <signal.h>
 # include <stdlib.h>
 # include <unistd.h>
-# include <stdio.h> // delete
 
 size_t	ft_strlen(char *s);
 int		ft_atoi(const char *nptr);

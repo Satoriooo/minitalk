@@ -11,9 +11,17 @@
 /* ************************************************************************** */
 
 #include "server.h"
-#define BUFFER_SIZE 20097152
 
-static t_data g_data;
+typedef struct s_data
+{
+	volatile sig_atomic_t	error_state;
+	volatile sig_atomic_t	client_pid;
+	volatile sig_atomic_t	pid_occupied;
+	volatile sig_atomic_t	bit;
+	volatile sig_atomic_t	busy;
+}	t_data;
+
+static t_data	g_data;
 
 static void	error_handler(char *msg)
 {
@@ -22,16 +30,12 @@ static void	error_handler(char *msg)
 }
 
 static char	bits_to_char(int signum)
-{	
-	static int n = 0;
+{
 	static unsigned char	c = 0;
-	if (n == 7)
-		c = 0;
+
 	c = c << 1 | signum;
 	return (c);
 }
-
-#include <stdio.h>
 
 static void	signal_handler(int signum, siginfo_t *info, void *context)
 {
@@ -54,33 +58,28 @@ static void	signal_handler(int signum, siginfo_t *info, void *context)
 
 size_t	get_strlen(int i)
 {
-	static size_t n;
+	static size_t	n;
+
 	if (i == 0)
 		n = 0;
-
 	n = n << 1 | g_data.bit;
 	return (n);
 }
 
-static void reset_struct()
+static void	reset_struct(void)
 {
 	g_data.bit = 0;
 	g_data.client_pid = 0;
 	g_data.error_state = 0;
 	g_data.pid_occupied = 0;
-	g_data.busy = 0; 
+	g_data.busy = 0;
 }
 
-static void print_pid()
+static void	sigaction_setup(struct sigaction *sa)
 {
 	ft_putstr_fd("PID: ", 1);
 	ft_putnbr_fd(getpid(), 1);
 	ft_putstr_fd("\n", 1);
-}
-
-static void sigaction_setup(struct sigaction *sa)
-{
-	print_pid();
 	sa->sa_sigaction = &signal_handler;
 	sigemptyset(&sa->sa_mask);
 	if (sigaddset(&sa->sa_mask, SIGUSR1) == -1)
@@ -95,64 +94,72 @@ static void sigaction_setup(struct sigaction *sa)
 	reset_struct();
 }
 
+static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
+{
+	char	c;
+
+	if (*i == 64)
+	{
+		*str = malloc(*len + 1);
+		if (!*str)
+			error_handler("Malloc failed.");
+		(*str)[*len] = '\0';
+	}
+	if (*idx < *len)
+	{
+		c = bits_to_char(g_data.bit);
+		if (*i > 64 && (*i + 1) % 8 == 0)
+			(*str)[(*idx)++] = c;
+	}
+	if (*idx == *len)
+	{
+		ft_putstr_fd(*str, 1);
+		free(*str);
+		*str = NULL;
+		*i = -1;
+		*idx = 0;
+		*len = 0;
+		g_data.pid_occupied = 0;
+	}
+}
+
 int	main(void)
 {
 	struct sigaction	sa;
-	size_t 				len;
-	char 				*str;
-	size_t	i;
-	size_t	digit;
-	char c;
-	size_t	idx;
-
-	int pid;
+	size_t				len;
+	char				*str;
+	size_t				i;
+	size_t				idx;
 
 	sigaction_setup(&sa);
-
 	i = 0;
-	digit = 0;
 	idx = 0;
+	len = 0;
+	str = NULL;
 	while (1)
 	{
-		while (g_data.busy == 0)
-			usleep(10);
-    	g_data.busy = 0;
-		pid = g_data.client_pid;
-
+		while (g_data.busy == 0 && g_data.error_state == 0)
+			pause();
+		if (g_data.error_state)
+			return (1);
+		g_data.busy = 0;
 		if (i < 64)
 			len = get_strlen(i);
-		else if (i >= 64)
+		else
+			handle_character(&i, &idx, &len, &str);
+		i++;
+		if (kill(g_data.client_pid, SIGUSR1) == -1)
 		{
-			if (i == 64)
+			reset_struct();
+			if (str)
 			{
-				str = malloc(len + 1);
-				if (!str)
-					error_handler("Malloc failed.");
-				str[len] = '\0';
-			}
-			if (idx < len)
-			{
-				c = bits_to_char(g_data.bit);
-				if (i > 64 && (i + 1) % 8 == 0)
-					str[idx++] = c;
-				c = 0;
-			}
-			if (idx == len)
-			{
-				ft_putstr_fd(str, 1);
 				free(str);
 				str = NULL;
-				i = -1;
-				idx = 0;
-				len = 0;
-				g_data.pid_occupied = 0;
 			}
+			i = -1;
+			idx = 0;
+			len = 0;
 		}
-		if (kill(pid, SIGUSR1) == -1)
-			return (1);
-		if (idx > 0 && idx == len)
-			g_data.client_pid = 0;
-		i++;
 	}
 	return (0);
 }
