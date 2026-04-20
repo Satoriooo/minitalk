@@ -19,21 +19,15 @@ static void	error_handler(char *msg)
 {
 	print_error(msg);
 	g_data.error_state = 1;
-; //TODO not safe for signal-safety man perspective , can u  se flag and exit in main instad
 }
 
 static char	bits_to_char(int signum)
-{
-	// static int x = 0;
-//	printf("-- bits_to_char ... Call: %d --\n", x++);
-	
+{	
 	static int n = 0;
 	static unsigned char	c = 0;
 	if (n == 7)
 		c = 0;
-//	printf("bit: %d\n", signum);
 	c = c << 1 | signum;
-//	printf("== bit in int ... %d ==\n", c);
 	return (c);
 }
 
@@ -44,13 +38,10 @@ static void	signal_handler(int signum, siginfo_t *info, void *context)
 	(void)context;
 	if (info->si_pid <= 0)
 		error_handler("Invalid PID.");
-	printf("state: %d, client pid %d\n", g_data.pid_occupied, g_data.client_pid);
 	if (g_data.pid_occupied == 1 && g_data.client_pid != info->si_pid)
 		return ;
 	if (g_data.pid_occupied == 0)
-		g_data.client_pid = info->si_pid;
 	{
-		printf("Client PID: %d\n", info->si_pid);
 		g_data.client_pid = info->si_pid;
 		g_data.pid_occupied = 1;
 	}
@@ -63,9 +54,6 @@ static void	signal_handler(int signum, siginfo_t *info, void *context)
 
 size_t	get_strlen(int i)
 {
-	// static int x = 0;
-//	printf("get_strlen ... call: %d\n", x++);
-
 	static size_t n;
 	if (i == 0)
 		n = 0;
@@ -80,6 +68,7 @@ static void reset_struct()
 	g_data.client_pid = 0;
 	g_data.error_state = 0;
 	g_data.pid_occupied = 0;
+	g_data.busy = 0; 
 }
 
 static void print_pid()
@@ -94,12 +83,15 @@ static void sigaction_setup(struct sigaction *sa)
 	print_pid();
 	sa->sa_sigaction = &signal_handler;
 	sigemptyset(&sa->sa_mask);
-	sigaddset(&sa->sa_mask, SIGUSR1);
-	sigaddset(&sa->sa_mask, SIGUSR1);
-	sigaddset(&sa->sa_mask, SIGUSR2);
+	if (sigaddset(&sa->sa_mask, SIGUSR1) == -1)
+		error_handler("Failed sigaddset.");
+	if (sigaddset(&sa->sa_mask, SIGUSR2) == -1)
+		error_handler("Failed sigaddset.");
 	sa->sa_flags = SA_SIGINFO;
-	sigaction(SIGUSR1, sa, NULL);
-	sigaction(SIGUSR2, sa, NULL);
+	if (sigaction(SIGUSR1, sa, NULL) == -1)
+		error_handler("Failed sigaction.");
+	if (sigaction(SIGUSR2, sa, NULL) == -1)
+		error_handler("Failed sigaction.");
 	reset_struct();
 }
 
@@ -113,18 +105,10 @@ int	main(void)
 	char c;
 	size_t	idx;
 
+	int pid;
+
 	sigaction_setup(&sa);
 
-	// print_pid();
-	// sa.sa_sigaction = &signal_handler;
-	// sigemptyset(&sa.sa_mask);
-	// sigaddset_handler(&sa.sa_mask, SIGUSR1);
-	// sigaddset(&sa.sa_mask, SIGUSR1);
-	// sigaddset(&sa.sa_mask, SIGUSR2);
-	// sa.sa_flags = SA_SIGINFO;
-	// sigaction(SIGUSR1, &sa, NULL);
-	// sigaction(SIGUSR2, &sa, NULL);
-	// reset_struct();
 	i = 0;
 	digit = 0;
 	idx = 0;
@@ -133,40 +117,28 @@ int	main(void)
 		while (g_data.busy == 0)
 			usleep(10);
     	g_data.busy = 0;
-		
-		printf("-- While loop call ... i: %zu--\n", i);
+		pid = g_data.client_pid;
+
 		if (i < 64)
 			len = get_strlen(i);
 		else if (i >= 64)
 		{
 			if (i == 64)
 			{
-				printf("-- Malloc call --\n");
-				printf("len: %zu\n", len);
-
 				str = malloc(len + 1);
 				if (!str)
 					error_handler("Malloc failed.");
 				str[len] = '\0';
 			}
-			static size_t z = 0;
-			printf("-- before: bits_to_char ... Call: %zu, i: %zu --\n", z++, i);
-			printf("-- idx: %zu, len: %zu --\n", idx, len);
 			if (idx < len)
 			{
-				printf("-- cp: bits_to_char ... Call: %zu, i: %zu --\n", z++, i);
-
 				c = bits_to_char(g_data.bit);
 				if (i > 64 && (i + 1) % 8 == 0)
-				{
 					str[idx++] = c;
-					printf("c: %c\n", c);
-				}
 				c = 0;
 			}
 			if (idx == len)
 			{
-				// printf("-- ft_putstr --\n");
 				ft_putstr_fd(str, 1);
 				free(str);
 				str = NULL;
@@ -174,10 +146,9 @@ int	main(void)
 				idx = 0;
 				len = 0;
 				g_data.pid_occupied = 0;
-				// g_data.client_pid = 0;
 			}
 		}
-		if (kill(g_data.client_pid, SIGUSR1) == -1)
+		if (kill(pid, SIGUSR1) == -1)
 			return (1);
 		if (idx > 0 && idx == len)
 			g_data.client_pid = 0;
