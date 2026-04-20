@@ -21,13 +21,18 @@ static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 	(void)context;
 	if (signum == SIGUSR1)
 	{
-		ft_putstr_fd("Received confirmation signal.\n", 1);
+		ft_putstr_fd("Received confirmation signal: 0.\n", 1);
+
+		// ft_putstr_fd("Received confirmation signal.\n", 1);
 		// if(i % 2 == 0)
 		// 	write(1, "1", 1);
 		// else 
 		// 	write(1, "2", 1);
 		i++;
 	}
+	else
+		ft_putstr_fd("Received confirmation signal: 1\n", 1);
+
 	g_state = 0;
 }
 
@@ -56,6 +61,7 @@ static void	send_char(unsigned char c, int pid)
 			safe_kill(pid, SIGUSR1);
 		else
 			safe_kill(pid, SIGUSR2);
+		printf("sent bit: %i\n", c >> i & 1);
 		cnt = 0;
 		while (g_state == 1)
 		{

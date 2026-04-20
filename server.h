@@ -13,6 +13,7 @@
 #ifndef SERVER_H
 # define SERVER_H
 
+# define _DEFAULT_SOURCE
 # define _POSIX_C_SOURCE 200809L
 # include <signal.h>
 # include <stdlib.h>
@@ -23,8 +24,9 @@ typedef struct s_data
 {
 	volatile sig_atomic_t	error_state;
 	volatile sig_atomic_t	client_pid;
+	volatile sig_atomic_t	pid_occupied;
 	volatile sig_atomic_t	bit;
-	volatile sig_atomic_t	state;
+	volatile sig_atomic_t	busy;
 }	t_data;
 
 size_t		ft_strlen(char *s);
