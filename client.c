@@ -19,10 +19,9 @@ static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 	(void)si;
 	(void)context;
 	if (signum == SIGUSR1)
-		ft_putstr_fd("Received confirmation signal: 0.\n", 1);
-	else
-		ft_putstr_fd("Received confirmation signal: 1\n", 1);
-	g_state = 0;
+		g_state = 0;
+	if (signum == SIGUSR2)
+		g_state = 1;
 }
 
 static void	error_handler(char *msg)
@@ -61,12 +60,13 @@ static void	send_char(unsigned char c, int pid)
 	}
 }
 
-void	send_length(char *s, size_t len, int pid)
+void	send_length(char *s, int pid)
 {
 	size_t	i = 0;
 	size_t	cnt;
+	size_t	len;
 
-	len = ft_strlen(s);
+	len = ft_strlen(s) + 1;
 	while (i < 64)
 	{
 		g_state = 1;
@@ -79,7 +79,7 @@ void	send_length(char *s, size_t len, int pid)
 		{
 			usleep(100);
 			cnt++;
-			if (cnt == 20000)
+			if (cnt == 10000)
 				error_handler("Time out: Can't receive confirmation.");
 		}
 	}
@@ -109,10 +109,11 @@ int	main(int ac, char **av)
 		error_handler("Invalid PID.");
 	pid = ft_atoi(av[1]);
 	init_signals();
-	send_length(av[2], ft_strlen(av[2]), pid);
+	send_length(av[2], pid);
 	i = 0;
 	while (av[2][i])
 		send_char((unsigned char)av[2][i++], pid);
+	ft_putstr_fd("Message successfully received.", 1);
 	return (0);
 }
 

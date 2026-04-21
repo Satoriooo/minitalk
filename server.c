@@ -39,6 +39,7 @@ static char	bits_to_char(int signum)
 
 static void	signal_handler(int signum, siginfo_t *info, void *context)
 {
+	ft_putstr_fd("signal_handler called\n", 1);
 	(void)context;
 	if (info->si_pid <= 0)
 		error_handler("Invalid PID.");
@@ -100,7 +101,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 
 	if (*i == 64)
 	{
-		*str = malloc(*len + 1);
+		*str = malloc(*len);
 		if (!*str)
 		{
 			error_handler("Malloc failed.");
@@ -116,7 +117,6 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	}
 	if (*idx == *len)
 	{
-		(*str)[*len] = '\0';
 		ft_putstr_fd(*str, 1);
 		free(*str);
 		*str = NULL;
@@ -149,7 +149,7 @@ static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 	{
 		usleep(100);
 		wait_time++;
-		if (g_data.pid_occupied == 1 && wait_time > 20000)
+		if (g_data.pid_occupied == 1 && wait_time > 10000)
 		{
 			reset_client_state(i, idx, len, s);
 			wait_time = 0;
