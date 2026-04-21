@@ -113,6 +113,7 @@ int	main(int ac, char **av)
 	i = 0;
 	while (av[2][i])
 		send_char((unsigned char)av[2][i++], pid);
+	send_char('\0', pid);
 	ft_putstr_fd("Message successfully received.", 1);
 	return (0);
 }

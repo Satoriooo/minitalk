@@ -18,6 +18,7 @@
 # include <signal.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <stdio.h>
 
 size_t	ft_strlen(char *s);
 void	print_error(char *s);

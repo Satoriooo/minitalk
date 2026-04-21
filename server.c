@@ -43,13 +43,17 @@ static void	signal_handler(int signum, siginfo_t *info, void *context)
 	(void)context;
 	if (info->si_pid <= 0)
 		error_handler("Invalid PID.");
+	printf("signal_handler ... check 01\n");
 	if (g_data.pid_occupied == 1 && g_data.client_pid != info->si_pid)
 		return ;
+	printf("signal_handler ... check 02\n");
 	if (g_data.pid_occupied == 0)
 	{
 		g_data.client_pid = info->si_pid;
 		g_data.pid_occupied = 1;
 	}
+	printf("signal_handler ... check 03\n");
+
 	if (signum == SIGUSR1)
 		g_data.bit = 0;
 	else
@@ -109,12 +113,13 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 		}
 
 	}
-	if (*idx < *len)
+	if (*idx <= *len)
 	{
 		c = bits_to_char(g_data.bit);
 		if (*i > 64 && (*i + 1) % 8 == 0)
 			(*str)[(*idx)++] = c;
 	}
+	printf("idx: %zu, len: %zu\n", *idx, *len);
 	if (*idx == *len)
 	{
 		ft_putstr_fd(*str, 1);
@@ -129,7 +134,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 
 static void	reset_client_state(size_t *i, size_t *idx, size_t *len, char **s)
 {
-	reset_struct();
+//	reset_struct();
 	if (*s)
 	{
 		free(*s);
@@ -138,12 +143,15 @@ static void	reset_client_state(size_t *i, size_t *idx, size_t *len, char **s)
 	*i = 0;
 	*idx = 0;
 	*len = 0;
+//	reset_struct();
 }
 
 static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 {
 	int	wait_time;
 
+	printf("-- wait_for_signal--\n");
+	printf("i: %zu, idx: %zu, len: %zu, g_data.busy: %d, g_data.error_state: %d\n", *i, *idx, *len, g_data.busy, g_data.error_state);
 	wait_time = 0;
 	while (g_data.busy == 0 && g_data.error_state == 0)
 	{
@@ -170,17 +178,23 @@ int	main(void)
 	reset_client_state(&i, &idx, &len, &str);
 	while (1)
 	{
+//		printf("main ... check 00\n");
 		wait_for_signal(&i, &idx, &len, &str);
 		if (g_data.error_state)
 			return (1);
+//		printf("main ... check 01\n");
 		g_data.busy = 0;
 		if (i < 64)
 			len = get_strlen(i);
 		else
 			handle_character(&i, &idx, &len, &str);
 		i++;
+//		printf("main ... check 02\n");
+
 		if (kill(g_data.client_pid, SIGUSR1) == -1)
 			reset_client_state(&i, &idx, &len, &str);
+//		printf("main ... check 03\n");
+
 	}
 	return (0);
 }
