@@ -102,8 +102,11 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	{
 		*str = malloc(*len + 1);
 		if (!*str)
+		{
 			error_handler("Malloc failed.");
-		(*str)[*len] = '\0';
+			return ;
+		}
+
 	}
 	if (*idx < *len)
 	{
@@ -113,6 +116,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	}
 	if (*idx == *len)
 	{
+		(*str)[*len] = '\0';
 		ft_putstr_fd(*str, 1);
 		free(*str);
 		*str = NULL;
@@ -123,23 +127,50 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	}
 }
 
+static void	reset_client_state(size_t *i, size_t *idx, size_t *len, char **s)
+{
+	reset_struct();
+	if (*s)
+	{
+		free(*s);
+		*s = NULL;
+	}
+	*i = 0;
+	*idx = 0;
+	*len = 0;
+}
+
+static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
+{
+	int	wait_time;
+
+	wait_time = 0;
+	while (g_data.busy == 0 && g_data.error_state == 0)
+	{
+		usleep(100);
+		wait_time++;
+		if (g_data.pid_occupied == 1 && wait_time > 20000)
+		{
+			reset_client_state(i, idx, len, s);
+			wait_time = 0;
+		}
+	}
+}
+
 int	main(void)
 {
 	struct sigaction	sa;
-	size_t				len;
-	char				*str;
 	size_t				i;
 	size_t				idx;
+	size_t				len;
+	char				*str;
 
 	sigaction_setup(&sa);
-	i = 0;
-	idx = 0;
-	len = 0;
 	str = NULL;
+	reset_client_state(&i, &idx, &len, &str);
 	while (1)
 	{
-		while (g_data.busy == 0 && g_data.error_state == 0)
-			pause();
+		wait_for_signal(&i, &idx, &len, &str);
 		if (g_data.error_state)
 			return (1);
 		g_data.busy = 0;
@@ -149,17 +180,7 @@ int	main(void)
 			handle_character(&i, &idx, &len, &str);
 		i++;
 		if (kill(g_data.client_pid, SIGUSR1) == -1)
-		{
-			reset_struct();
-			if (str)
-			{
-				free(str);
-				str = NULL;
-			}
-			i = -1;
-			idx = 0;
-			len = 0;
-		}
+			reset_client_state(&i, &idx, &len, &str);
 	}
 	return (0);
 }
