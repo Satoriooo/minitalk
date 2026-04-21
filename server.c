@@ -12,65 +12,6 @@
 
 #include "server.h"
 
-typedef struct s_data
-{
-	volatile sig_atomic_t	error_state;
-	volatile sig_atomic_t	client_pid;
-	volatile sig_atomic_t	pid_occupied;
-	volatile sig_atomic_t	bit;
-	volatile sig_atomic_t	busy;
-}	t_data;
-
-static t_data	g_data;
-
-static void	error_handler(char *msg)
-{
-	print_error(msg);
-	g_data.error_state = 1;
-}
-
-static char	bits_to_char(int signum)
-{
-	static unsigned char	c = 0;
-
-	c = c << 1 | signum;
-	return (c);
-}
-
-static void	signal_handler(int signum, siginfo_t *info, void *context)
-{
-	ft_putstr_fd("signal_handler called\n", 1);
-	(void)context;
-	if (info->si_pid <= 0)
-		error_handler("Invalid PID.");
-	printf("signal_handler ... check 01\n");
-	if (g_data.pid_occupied == 1 && g_data.client_pid != info->si_pid)
-		return ;
-	printf("signal_handler ... check 02\n");
-	if (g_data.pid_occupied == 0)
-	{
-		g_data.client_pid = info->si_pid;
-		g_data.pid_occupied = 1;
-	}
-	printf("signal_handler ... check 03\n");
-
-	if (signum == SIGUSR1)
-		g_data.bit = 0;
-	else
-		g_data.bit = 1;
-	g_data.busy = 1;
-}
-
-size_t	get_strlen(int i)
-{
-	static size_t	n;
-
-	if (i == 0)
-		n = 0;
-	n = n << 1 | g_data.bit;
-	return (n);
-}
-
 static void	reset_struct(void)
 {
 	g_data.bit = 0;
@@ -78,25 +19,6 @@ static void	reset_struct(void)
 	g_data.error_state = 0;
 	g_data.pid_occupied = 0;
 	g_data.busy = 0;
-}
-
-static void	sigaction_setup(struct sigaction *sa)
-{
-	ft_putstr_fd("PID: ", 1);
-	ft_putnbr_fd(getpid(), 1);
-	ft_putstr_fd("\n", 1);
-	sa->sa_sigaction = &signal_handler;
-	sigemptyset(&sa->sa_mask);
-	if (sigaddset(&sa->sa_mask, SIGUSR1) == -1)
-		error_handler("Failed sigaddset.");
-	if (sigaddset(&sa->sa_mask, SIGUSR2) == -1)
-		error_handler("Failed sigaddset.");
-	sa->sa_flags = SA_SIGINFO;
-	if (sigaction(SIGUSR1, sa, NULL) == -1)
-		error_handler("Failed sigaction.");
-	if (sigaction(SIGUSR2, sa, NULL) == -1)
-		error_handler("Failed sigaction.");
-	reset_struct();
 }
 
 static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
@@ -111,7 +33,6 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 			error_handler("Malloc failed.");
 			return ;
 		}
-
 	}
 	if (*idx <= *len)
 	{
@@ -119,40 +40,22 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 		if (*i > 64 && (*i + 1) % 8 == 0)
 			(*str)[(*idx)++] = c;
 	}
-	printf("idx: %zu, len: %zu\n", *idx, *len);
 	if (*idx == *len)
 	{
 		ft_putstr_fd(*str, 1);
 		free(*str);
 		*str = NULL;
-		*i = -1;
-		*idx = 0;
-		*len = 0;
+		loop_reset(i, idx, len);
 		g_data.pid_occupied = 0;
 	}
-}
-
-static void	reset_client_state(size_t *i, size_t *idx, size_t *len, char **s)
-{
-//	reset_struct();
-	if (*s)
-	{
-		free(*s);
-		*s = NULL;
-	}
-	*i = 0;
-	*idx = 0;
-	*len = 0;
-//	reset_struct();
 }
 
 static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 {
 	int	wait_time;
 
-	printf("-- wait_for_signal--\n");
-	printf("i: %zu, idx: %zu, len: %zu, g_data.busy: %d, g_data.error_state: %d\n", *i, *idx, *len, g_data.busy, g_data.error_state);
 	wait_time = 0;
+	printf("g_data.busy: %d, g_data.error_state: %d\n", g_data.busy, g_data.error_state);
 	while (g_data.busy == 0 && g_data.error_state == 0)
 	{
 		usleep(100);
@@ -163,6 +66,32 @@ static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 			wait_time = 0;
 		}
 	}
+}
+
+void	sigaction_setup(struct sigaction *sa)
+{
+	printf("sigaction_setup ... Check 00\n");
+
+	ft_putstr_fd("PID: ", 1);
+	ft_putnbr_fd(getpid(), 1);
+	ft_putstr_fd("\n", 1);
+	sa->sa_sigaction = &signal_handler;
+	sigemptyset(&sa->sa_mask);
+	if (sigaddset(&sa->sa_mask, SIGUSR1) == -1)
+		error_handler("Failed sigaddset.");
+	if (sigaddset(&sa->sa_mask, SIGUSR2) == -1)
+		error_handler("Failed sigaddset.");
+
+	printf("sigaction_setup ... Check 02\n");
+
+		sa->sa_flags = SA_SIGINFO;
+	if (sigaction(SIGUSR1, sa, NULL) == -1)
+		error_handler("Failed sigaction.");
+	if (sigaction(SIGUSR2, sa, NULL) == -1)
+		error_handler("Failed sigaction.");
+	printf("sigaction_setup ... Check 03\n");
+
+	reset_struct();
 }
 
 int	main(void)
@@ -178,23 +107,18 @@ int	main(void)
 	reset_client_state(&i, &idx, &len, &str);
 	while (1)
 	{
-//		printf("main ... check 00\n");
+		printf("wait_for_signal: %zu\n", i);
 		wait_for_signal(&i, &idx, &len, &str);
 		if (g_data.error_state)
 			return (1);
-//		printf("main ... check 01\n");
 		g_data.busy = 0;
 		if (i < 64)
 			len = get_strlen(i);
 		else
 			handle_character(&i, &idx, &len, &str);
 		i++;
-//		printf("main ... check 02\n");
-
 		if (kill(g_data.client_pid, SIGUSR1) == -1)
 			reset_client_state(&i, &idx, &len, &str);
-//		printf("main ... check 03\n");
-
 	}
 	return (0);
 }
