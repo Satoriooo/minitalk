@@ -62,6 +62,7 @@ static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 		wait_time++;
 		if (g_data.pid_occupied == 1 && wait_time > 10000)
 		{
+			printf("No more signals... RESET state! \n");
 			reset_client_state(i, idx, len, s);
 			wait_time = 0;
 		}
@@ -107,8 +108,10 @@ int	main(void)
 	reset_client_state(&i, &idx, &len, &str);
 	while (1)
 	{
-		printf("wait_for_signal: %zu\n", i);
+		printf("wait_for_signal Call ... %zu\n", i);
 		wait_for_signal(&i, &idx, &len, &str);
+		printf("received signal ... i, idx, len, str\n");
+		
 		if (g_data.error_state)
 			return (1);
 		g_data.busy = 0;
@@ -117,6 +120,7 @@ int	main(void)
 		else
 			handle_character(&i, &idx, &len, &str);
 		i++;
+		printf("g_data.client_pid: %d\n", g_data.client_pid);
 		if (kill(g_data.client_pid, SIGUSR1) == -1)
 			reset_client_state(&i, &idx, &len, &str);
 	}
