@@ -33,11 +33,10 @@ In case of an error, it prints out "Error\n" and follows a concise error message
 ## Resources
 ### Documntations
 - [sigaction(2) — Linux manual page](https://man7.org/linux/man-pages/man2/sigaction.2.html)
-- [【C言語】signalとsigactionの使い方を分かりやすく解説（実装サンプルあり）](https://en-junior.com/sigaction-signal/#index_id9) (ENG: Easy explanation of signal and sigaction)
 - [sig_atomic_t](https://www.cs.wm.edu/~smherwig/courses/csci415-common/signals/sig_atomic/index.html)
+- [【C言語】signalとsigactionの使い方を分かりやすく解説（実装サンプルあり）](https://en-junior.com/sigaction-signal/#index_id9) (ENG: Easy explanation of signal and sigaction)
 
 ### AI usage
 I got tips/instructions over the following topics.
 - How to compile two programs with one Makefile
-- How to deal with large text input (how the terminal treat such large file)
-- 
+- How to inlude global variables into header file

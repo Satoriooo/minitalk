@@ -25,6 +25,7 @@ int		ft_atoi(const char *nptr);
 void	ft_putstr_fd(char *s, int fd);
 int		is_int(char *s);
 void	print_error(char *s);
-
+void	error_handler(char *msg);
+void	safe_kill(int pid, int signum);
 
 #endif

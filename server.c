@@ -12,7 +12,29 @@
 
 #include "server.h"
 
-static void	reset_struct(void)
+t_data	g_data;
+
+void	signal_handler(int signum, siginfo_t *info, void *context)
+{
+	(void)context;
+	if (info->si_pid <= 0)
+		g_data.error_state = 1;
+	if (g_data.pid_occupied == 1 && g_data.client_pid != info->si_pid)
+		return ;
+	if (g_data.pid_occupied == 0)
+	{
+		g_data.client_pid = info->si_pid;
+		g_data.pid_occupied = 1;
+	}
+	if (signum == SIGUSR1)
+		g_data.bit = 0;
+	else
+		g_data.bit = 1;
+	g_data.busy = 1;
+}
+
+void	reset_struct(void)
+
 {
 	g_data.bit = 0;
 	g_data.client_pid = 0;
@@ -29,10 +51,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	{
 		*str = malloc(*len);
 		if (!*str)
-		{
-			error_handler("Malloc failed.");
-			return ;
-		}
+			exit_error("Malloc failed.");
 	}
 	if (*idx <= *len)
 	{
@@ -43,6 +62,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	if (*idx == *len)
 	{
 		ft_putstr_fd(*str, 1);
+		ft_putstr_fd("\n", 1);
 		free(*str);
 		*str = NULL;
 		loop_reset(i, idx, len);
@@ -58,12 +78,12 @@ static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 	printf("g_data.busy: %d, g_data.error_state: %d\n", g_data.busy, g_data.error_state);
 	while (g_data.busy == 0 && g_data.error_state == 0)
 	{
-		usleep(100);
-		wait_time++;
-		if (g_data.pid_occupied == 1 && wait_time > 10000)
+		usleep(500);
+		if (g_data.pid_occupied == 1 && wait_time++ > 10000)
 		{
 			printf("No more signals... RESET state! \n");
 			reset_client_state(i, idx, len, s);
+			reset_struct();
 			wait_time = 0;
 		}
 	}
@@ -106,23 +126,23 @@ int	main(void)
 	sigaction_setup(&sa);
 	str = NULL;
 	reset_client_state(&i, &idx, &len, &str);
+	reset_struct();
 	while (1)
 	{
-		printf("wait_for_signal Call ... %zu\n", i);
 		wait_for_signal(&i, &idx, &len, &str);
 		printf("received signal ... i, idx, len, str\n");
 		
 		if (g_data.error_state)
 			return (1);
-		g_data.busy = 0;
+
 		if (i < 64)
 			len = get_strlen(i);
 		else
 			handle_character(&i, &idx, &len, &str);
 		i++;
-		printf("g_data.client_pid: %d\n", g_data.client_pid);
 		if (kill(g_data.client_pid, SIGUSR1) == -1)
 			reset_client_state(&i, &idx, &len, &str);
+		g_data.busy = 0;
 	}
 	return (0);
 }

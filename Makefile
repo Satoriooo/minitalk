@@ -8,10 +8,10 @@ RM = rm -f
 HEAD_SERVER = server.h
 HEAD_CLIENT = client.h
 
-SRCS_SERVER = server.c s_helper1.c s_helper2.c s_helper3.c
+SRCS_SERVER = server.c server_utils.c server_utils2.c
 OBJS_SERVER = $(SRCS_SERVER:.c=.o)
 
-SRCS_CLIENT = client.c c_helper.c
+SRCS_CLIENT = client.c client_utils.c client_utils2.c
 OBJS_CLIENT = $(SRCS_CLIENT:.c=.o)
 
 all: $(SERVER) $(CLIENT)

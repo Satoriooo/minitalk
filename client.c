@@ -26,18 +26,6 @@ static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 		g_state = 1;
 }
 
-static void	error_handler(char *msg)
-{
-	print_error(msg);
-	exit(1);
-}
-
-static void	safe_kill(int pid, int signum)
-{
-	if (kill(pid, signum) == -1)
-		error_handler("Kill function failed. Check PID.");
-}
-
 static void	send_char(unsigned char c, int pid)
 {
 	int	i;
@@ -64,11 +52,12 @@ static void	send_char(unsigned char c, int pid)
 
 void	send_length(char *s, int pid)
 {
-	size_t	i = 0;
+	size_t	i;
 	size_t	cnt;
 	size_t	len;
 
 	len = ft_strlen(s) + 1;
+	i = 0;
 	while (i < 64)
 	{
 		g_state = 1;
