@@ -16,7 +16,6 @@ t_data	g_data;
 
 void	signal_handler(int signum, siginfo_t *info, void *context)
 {
-	ft_putstr_fd("signal_handler called\n", 1);
 	(void)context;
 	if (info->si_pid <= 0)
 		g_data.error_state = 1;
@@ -62,6 +61,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 	if (*idx == *len)
 	{
 		ft_putstr_fd(*str, 1);
+		ft_putstr_fd("\n", 1);
 		free(*str);
 		*str = NULL;
 		*i = -1;
@@ -78,11 +78,11 @@ static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 	wait_time = 0;
 	while (g_data.busy == 0 && g_data.error_state == 0)
 	{
-		usleep(100);
-		wait_time++;
-		if (g_data.pid_occupied == 1 && wait_time > 10000)
+		usleep(500);
+		if (g_data.pid_occupied == 1 && wait_time++ > 10000)
 		{
 			reset_client_state(i, idx, len, s);
+			reset_struct();
 			wait_time = 0;
 		}
 	}
@@ -99,12 +99,12 @@ int	main(void)
 	sigaction_setup(&sa);
 	str = NULL;
 	reset_client_state(&i, &idx, &len, &str);
+	reset_struct();
 	while (1)
 	{
 		wait_for_signal(&i, &idx, &len, &str);
 		if (g_data.error_state)
 			return (1);
-		g_data.busy = 0;
 		if (i < 64)
 			len = get_strlen(i);
 		else
@@ -112,6 +112,7 @@ int	main(void)
 		i++;
 		if (kill(g_data.client_pid, SIGUSR1) == -1)
 			reset_client_state(&i, &idx, &len, &str);
+		g_data.busy = 0;
 	}
 	return (0);
 }

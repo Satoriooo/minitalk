@@ -3,3 +3,6 @@
 a.out
 client
 server
+.vscode
+test*
+*.txt
