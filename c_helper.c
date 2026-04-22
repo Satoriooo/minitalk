@@ -61,6 +61,8 @@ int	ft_atoi(const char *nptr)
 		nb = nb * 10 + (nptr[i] - '0');
 		i++;
 	}
+	if (nb > 2147483647)
+		return (-1);
 	return (nb * sign);
 }
 

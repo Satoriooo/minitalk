@@ -34,6 +34,7 @@ void	signal_handler(int signum, siginfo_t *info, void *context)
 }
 
 void	reset_struct(void)
+
 {
 	g_data.bit = 0;
 	g_data.client_pid = 0;
@@ -64,9 +65,7 @@ static void	handle_character(size_t *i, size_t *idx, size_t *len, char **str)
 		ft_putstr_fd("\n", 1);
 		free(*str);
 		*str = NULL;
-		*i = -1;
-		*idx = 0;
-		*len = 0;
+		loop_reset(i, idx, len);
 		g_data.pid_occupied = 0;
 	}
 }
@@ -76,16 +75,44 @@ static void	wait_for_signal(size_t *i, size_t *idx, size_t *len, char **s)
 	int	wait_time;
 
 	wait_time = 0;
+	printf("g_data.busy: %d, g_data.error_state: %d\n", g_data.busy, g_data.error_state);
 	while (g_data.busy == 0 && g_data.error_state == 0)
 	{
 		usleep(500);
 		if (g_data.pid_occupied == 1 && wait_time++ > 10000)
 		{
+			printf("No more signals... RESET state! \n");
 			reset_client_state(i, idx, len, s);
 			reset_struct();
 			wait_time = 0;
 		}
 	}
+}
+
+void	sigaction_setup(struct sigaction *sa)
+{
+	printf("sigaction_setup ... Check 00\n");
+
+	ft_putstr_fd("PID: ", 1);
+	ft_putnbr_fd(getpid(), 1);
+	ft_putstr_fd("\n", 1);
+	sa->sa_sigaction = &signal_handler;
+	sigemptyset(&sa->sa_mask);
+	if (sigaddset(&sa->sa_mask, SIGUSR1) == -1)
+		error_handler("Failed sigaddset.");
+	if (sigaddset(&sa->sa_mask, SIGUSR2) == -1)
+		error_handler("Failed sigaddset.");
+
+	printf("sigaction_setup ... Check 02\n");
+
+		sa->sa_flags = SA_SIGINFO;
+	if (sigaction(SIGUSR1, sa, NULL) == -1)
+		error_handler("Failed sigaction.");
+	if (sigaction(SIGUSR2, sa, NULL) == -1)
+		error_handler("Failed sigaction.");
+	printf("sigaction_setup ... Check 03\n");
+
+	reset_struct();
 }
 
 int	main(void)
@@ -103,8 +130,11 @@ int	main(void)
 	while (1)
 	{
 		wait_for_signal(&i, &idx, &len, &str);
+		printf("received signal ... i, idx, len, str\n");
+		
 		if (g_data.error_state)
 			return (1);
+
 		if (i < 64)
 			len = get_strlen(i);
 		else

@@ -30,6 +30,17 @@ typedef struct s_data
 
 extern t_data	g_data;
 
+typedef struct s_data
+{
+	volatile sig_atomic_t	error_state;
+	volatile sig_atomic_t	client_pid;
+	volatile sig_atomic_t	pid_occupied;
+	volatile sig_atomic_t	bit;
+	volatile sig_atomic_t	busy;
+}	t_data;
+
+static t_data	g_data;
+
 size_t	ft_strlen(char *s);
 void	print_error(char *s);
 void	ft_putstr_fd(char *s, int fd);

@@ -16,6 +16,8 @@ static volatile sig_atomic_t	g_state = 0;
 
 static void	signal_confirmation(int signum, siginfo_t *si, void *context)
 {
+	static int n = 0;
+	printf("signal_confirmation ... n:%d\n", n++);
 	(void)si;
 	(void)context;
 	if (signum == SIGUSR1)
